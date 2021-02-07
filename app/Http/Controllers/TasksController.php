@@ -52,7 +52,7 @@ class TasksController extends Controller
         ]);
         
         $task = new Task;
-        $task->status = $request->title;
+        $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
 
@@ -108,6 +108,7 @@ class TasksController extends Controller
         
         $task = Task::findOrFail($id);
         // タスクを更新
+        $task->status = $request->status;    
         $task->content = $request->content;
         $task->save();
 
