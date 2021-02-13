@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
+
 use Illuminate\Http\Request;
 
 use App\Task;
@@ -92,19 +94,13 @@ class TasksController extends Controller
     public function show($id)
     {
         // idの値でユーザを検索して取得
-        $user = User::findOrFail($id);
+        $task = Task::findOrFail($id);
 
-        // 関係するモデルの件数をロード
-        $user->loadRelationshipCounts();
-
-        // ユーザの投稿一覧を作成日時の降順で取得
-        $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
-
-        // ユーザ詳細ビューでそれらを表示
-        return view('users.show', [
-            'user' => $user,
-            'tasks' => $tasks,
+        return view('tasks.show', [
+            'task' => $task,
         ]);
+
+
     }
 
     /**
@@ -167,10 +163,16 @@ class TasksController extends Controller
         // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、投稿を削除
         if (\Auth::id() === $task->user_id) {
             $task->delete();
+            
+           return back();
+
         }
         
-        // 前のURLへリダイレクトさせる
-        return back();
+        else{
+            
+        return view('welcome');
+            
+        }
            
     }
 }
