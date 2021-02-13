@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddTitleToTasksTable extends Migration
+class AddUserIdToTasksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +14,12 @@ class AddTitleToTasksTable extends Migration
     public function up()
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->string('status',10);
+            $table->unsignedBigInteger('user_id');
+            
+            
+            // 外部キー制約
+            $table->foreign('user_id')->references('id')->on('users');
         });
-        
     }
 
     /**
@@ -27,7 +30,9 @@ class AddTitleToTasksTable extends Migration
     public function down()
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('status');
+            
+            // 外部キー削除
+            $table->dropForeign('tasks_user_id_foreign');
         });
     }
 }

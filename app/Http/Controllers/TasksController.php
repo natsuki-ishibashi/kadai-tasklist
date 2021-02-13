@@ -14,13 +14,33 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     
+    // getでmessages/にアクセスされた場合の「一覧表示処理」
     public function index()
     {
-        $tasks = Task::all();
+        $data = [];
+        if (\Auth::check()) { 
+            // 認証済みの場合
+            // 認証済みユーザを取得
+            $user = \Auth::user();
+            // ユーザの投稿の一覧を作成日時の降順で取得
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+
+            return view('tasks.index', [
+                'tasks' => $tasks,
+            ]);
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
     }
 
     /**
@@ -28,6 +48,7 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     
     public function create()
     {
         $task = new Task;
@@ -44,6 +65,7 @@ class TasksController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+     
     public function store(Request $request)
     {
         $request->validate([
@@ -51,10 +73,10 @@ class TasksController extends Controller
             'content' => 'required|max:255',
         ]);
         
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+        $request->user()->tasks()->create([
+            'status' => $request->status,
+            'content' =>$request->content,
+        ]);
 
         return redirect('/');
     }
@@ -65,14 +87,23 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+     
+    // getでmessages/（任意のid）にアクセスされた場合の「取得表示処理」
     public function show($id)
     {
-         // idの値でメッセージを検索して取得
-        $task = Task::findOrFail($id);
+        // idの値でユーザを検索して取得
+        $user = User::findOrFail($id);
 
-        // メッセージ詳細ビューでそれを表示
-        return view('tasks.show', [
-            'task' => $task,
+        // 関係するモデルの件数をロード
+        $user->loadRelationshipCounts();
+
+        // ユーザの投稿一覧を作成日時の降順で取得
+        $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+
+        // ユーザ詳細ビューでそれらを表示
+        return view('users.show', [
+            'user' => $user,
+            'tasks' => $tasks,
         ]);
     }
 
@@ -82,6 +113,8 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+     
+    // getでmessages/（任意のid）/editにアクセスされた場合の「更新画面表示処理」
     public function edit($id)
     {
         $task = Task::findOrFail($id);
@@ -98,6 +131,8 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    
+    // putまたはpatchでmessages/（任意のid）にアクセスされた場合の「更新処理」
     public function update(Request $request, $id)
     {
          // バリデーション
@@ -122,12 +157,20 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+     
+    // deleteでmessages/（任意のid）にアクセスされた場合の「削除処理」
     public function destroy($id)
     {
+      // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-        $task->delete();
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
+        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、投稿を削除
+        if (\Auth::id() === $task->user_id) {
+            $task->delete();
+        }
+        
+        // 前のURLへリダイレクトさせる
+        return back();
+           
     }
 }
