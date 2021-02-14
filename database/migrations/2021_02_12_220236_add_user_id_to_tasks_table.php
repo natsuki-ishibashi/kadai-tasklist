@@ -31,8 +31,13 @@ class AddUserIdToTasksTable extends Migration
     {
         Schema::table('tasks', function (Blueprint $table) {
             
-            // 外部キー削除
+            // 外部キー制約削除
             $table->dropForeign('tasks_user_id_foreign');
+            
+            //外部キー削除
+            $table->dropColumn('user_id');
+
+            
         });
     }
 }
