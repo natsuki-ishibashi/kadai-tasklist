@@ -53,12 +53,26 @@ class TasksController extends Controller
      
     public function create()
     {
-        $task = new Task;
+        
+        $data = [];
+        if (\Auth::check()) { 
+            // 認証済みの場合
+            
+            $task = new Task;
 
         // メッセージ作成ビューを表示
         return view('tasks.create', [
             'task' => $task,
         ]);
+            
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
+        
     }
 
     /**
@@ -70,17 +84,28 @@ class TasksController extends Controller
      
     public function store(Request $request)
     {
-        $request->validate([
+        
+        $data = [];
+        if (\Auth::check()) { 
+            // 認証済みの場合
+             $request->validate([
             'status' => 'required|max:10',   
             'content' => 'required|max:255',
-        ]);
+            ]);
         
-        $request->user()->tasks()->create([
+            $request->user()->tasks()->create([
             'status' => $request->status,
             'content' =>$request->content,
-        ]);
-
-        return redirect('/');
+            ]);
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
+        
+        
     }
 
     /**
@@ -93,14 +118,24 @@ class TasksController extends Controller
     // getでmessages/（任意のid）にアクセスされた場合の「取得表示処理」
     public function show($id)
     {
-        // idの値でユーザを検索して取得
-        $task = Task::findOrFail($id);
+        
+        $data = [];
+        if (\Auth::check()) { 
+            // 認証済みの場合
+            // idの値でユーザを検索して取得
+            $task = Task::findOrFail($id);
 
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
-
-
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
+        
     }
 
     /**
@@ -113,11 +148,19 @@ class TasksController extends Controller
     // getでmessages/（任意のid）/editにアクセスされた場合の「更新画面表示処理」
     public function edit($id)
     {
-        $task = Task::findOrFail($id);
+        if (\Auth::check()) {
+            $task = Task::findOrFail($id);
 
-        return view('tasks.edit', [
+            return view('tasks.edit', [
             'task' => $task,
-        ]);
+            ]);
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
     }
 
     /**
@@ -131,28 +174,38 @@ class TasksController extends Controller
     // putまたはpatchでmessages/（任意のid）にアクセスされた場合の「更新処理」
     public function update(Request $request, $id)
     {
-         // バリデーション
-        $request->validate([
-            'status' => 'required|max:10',   
-            'content' => 'required|max:255',
-        ]);
+        if (\Auth::check()) {
+             // バリデーション
+            $request->validate([
+                'status' => 'required|max:10',   
+                'content' => 'required|max:255',
+            ]);
         
-        $task = Task::findOrFail($id);
+            $task = Task::findOrFail($id);
         
-        // タスクを更新
-        $task->status = $request->status;    
-        $task->content = $request->content;
-        $task->save();
+            // タスクを更新
+            $task->status = $request->status;    
+            $task->content = $request->content;
+            $task->save();
         
         
-        $tasks = Task::all();
+            $tasks = Task::all();
         
 
-        // タスク一覧を表示
-        return view('tasks.index',[
-            'tasks' => $tasks,
-        ]);
+            // タスク一覧を表示
+            return view('tasks.index',[
+                'tasks' => $tasks,
+            ]);
+        }
+        
+        else{
+            
+        return view('welcome');
+            
+        }
     }
+        
+        
 
     /**
      * Remove the specified resource from storage.
