@@ -138,13 +138,20 @@ class TasksController extends Controller
         ]);
         
         $task = Task::findOrFail($id);
+        
         // タスクを更新
         $task->status = $request->status;    
         $task->content = $request->content;
         $task->save();
+        
+        
+        $tasks = Task::all();
+        
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
+        // タスク一覧を表示
+        return view('tasks.index',[
+            'tasks' => $tasks,
+        ]);
     }
 
     /**
@@ -164,13 +171,18 @@ class TasksController extends Controller
         if (\Auth::id() === $task->user_id) {
             $task->delete();
             
-           return back();
+            $tasks = Task::all();
+
+            // タスク一覧を表示
+            return view('tasks.index',[
+            'tasks' => $tasks,
+            ]);
 
         }
         
         else{
             
-        return view('welcome');
+            return view('welcome');
             
         }
            
