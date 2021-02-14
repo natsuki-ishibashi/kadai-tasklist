@@ -25,5 +25,5 @@ Route::get('logout', 'Auth\LoginController@logout')->name('logout.get');
 
 Route::group(['middleware' => ['auth']], function () {
     
-    Route::resource('microposts', 'MicropostsController', ['only' => ['store', 'destroy']]);
+    Route::resource('tasks', 'TasksController', ['only' => ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']]);
 });
